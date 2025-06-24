@@ -1,0 +1,6 @@
+fastapi 
+uvicorn
+pydantic-settings
+boto3
+python-dotenv
+dataplane==0.1.3
