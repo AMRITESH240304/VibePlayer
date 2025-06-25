@@ -21,12 +21,9 @@ class R2Uploader:
             region_name='us-east-1'
         )
         
-    def upload_file(self, local_file_path: str, target_key: str):
-        if not os.path.exists(local_file_path):
-            raise FileNotFoundError(f"{local_file_path} not found.")
-
-        with open(local_file_path, 'rb') as f:
-            file_bytes = f.read()
+    def upload_file(self, file_obj, target_key: str):
+        # file_obj is a file-like object, e.g. UploadFile.file
+        file_bytes = file_obj.read()  # Read bytes from the stream
 
         result = s3_upload(
             Bucket=self.bucket,

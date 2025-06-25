@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     S3_SECRET_ACCESS_KEY:str
     S3_API_URL:str
     S3_BUCKET_NAME:str
+    MONGO_URI:str
     
     class Config:
         env_file = ".env"
