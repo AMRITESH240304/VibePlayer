@@ -37,6 +37,18 @@ def get_song(song_id:str):
         print("Error fetching song:", str(e))
         return Response(content=f"Error fetching song: {str(e)}", status_code=500)
     
+@router.get("/songs")
+def get_all_songs():
+    try:
+        songs = mongo_service.get_all_songs()
+        if not songs:
+            return Response(content="No songs found", status_code=404)
+        json_songs = [json.loads(json.dumps(song, default=str)) for song in songs]
+        return {"message": json_songs}
+    except Exception as e:
+        print("Error fetching songs:", str(e))
+        return Response(content=f"Error fetching songs: {str(e)}", status_code=500)
+    
 @router.get("/stream/{song_id}")
 def stream_audio(song_id: str, range: Optional[str] = Header(None)):
     try:

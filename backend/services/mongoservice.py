@@ -21,6 +21,9 @@ class MongoService:
     def get_songs_by_ids(self, song_ids: List[str]) -> List[Dict[str, Any]]:
         object_ids = [ObjectId(sid) for sid in song_ids]
         return list(self.songs.find({"_id": {"$in": object_ids}}))
+    
+    def get_all_songs(self) -> List[Dict[str, Any]]:
+        return list(self.songs.find({}))
 
     # # ───────────── PLAYLISTS ─────────────
 
