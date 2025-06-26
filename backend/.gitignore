@@ -3,3 +3,6 @@ __pycache__
 .venv
 .vscode
 app.py
+mp3.py
+song
+converted_mp3

@@ -1,15 +1,16 @@
-from pydantic import BaseModel, Field
-from typing import List, Optional
+from pydantic import BaseModel, Field, ConfigDict
+from typing import Optional, List
 
 class PlaylistSong(BaseModel):
     song_id: str
-    added_at: Optional[str]
+    added_at: Optional[str] = None
     order: int
 
 class Playlist(BaseModel):
-    id: Optional[str] = Field(alias="_id")
+    model_config = ConfigDict(populate_by_name=True, extra='ignore')
+
+    id: Optional[str] = Field(default=None, alias="_id")
     name: str
-    description: Optional[str]
-    user_id: str
+    description: Optional[str] = None
     songs: List[PlaylistSong]
-    created_at: Optional[str]
+    created_at: Optional[str] = None

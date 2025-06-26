@@ -4,6 +4,7 @@ from typing import Optional
 from services.streamservice import AudioStreamService
 from services.mongoservice import MongoService
 from models.song_model import Song
+from models.playlist_model import Playlist
 import json
 
 router = APIRouter()
@@ -14,6 +15,15 @@ mongo_service = MongoService()
 @router.get("/hello")
 def say_hello():
     return {"message": "Hello from another route!"}
+
+@router.post("/playlists")
+def create_playlist(playlist: Playlist):
+    try:
+        result = mongo_service.create_playlist(playlist.model_dump(by_alias=True, exclude_none=True))
+        return {"message": "Playlist created successfully", "playlist_id": str(result)}
+    except Exception as e:
+        print("Error creating playlist:", str(e))
+        return Response(content=f"Error creating playlist: {str(e)}", status_code=500)
 
 @router.get("/songs/{song_id}")
 def get_song(song_id:str):

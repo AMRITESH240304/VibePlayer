@@ -24,9 +24,9 @@ class MongoService:
 
     # # ───────────── PLAYLISTS ─────────────
 
-    # def create_playlist(self, playlist_data: Dict[str, Any]) -> str:
-    #     result = self.playlists.insert_one(playlist_data)
-    #     return str(result.inserted_id)
+    def create_playlist(self, playlist_data: Dict[str, Any]) -> str:
+        result = self.playlists.insert_one(playlist_data)
+        return str(result)
 
     # def get_playlist_by_id(self, playlist_id: str) -> Optional[Dict[str, Any]]:
     #     return self.playlists.find_one({"_id": ObjectId(playlist_id)})
