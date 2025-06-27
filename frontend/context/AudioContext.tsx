@@ -1,6 +1,6 @@
 import { Song } from '@/types/index';
-import { useAudioPlayer } from 'expo-audio';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Audio } from 'expo-av';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 type AudioContextType = {
   currentSong: Song | null;
@@ -21,10 +21,34 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const soundRef = useRef<Audio.Sound | null>(null);
   
-  const audioPlayer = useAudioPlayer({
-    uri: audioUrl || '',
-  });
+  // Configure audio mode for background playback
+  useEffect(() => {
+    const setupAudio = async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          staysActiveInBackground: true, // This is the key setting for background playback
+          playsInSilentModeIOS: true,
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: false,
+        });
+        console.log('Audio mode set for background playback');
+      } catch (error) {
+        console.error('Error setting audio mode:', error);
+      }
+    };
+    
+    setupAudio();
+    
+    return () => {
+      // Clean up sound on unmount
+      if (soundRef.current) {
+        soundRef.current.unloadAsync();
+      }
+    };
+  }, []);
   
   useEffect(() => {
     if (currentSong) {
@@ -35,23 +59,62 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Update position and duration
     const intervalId = setInterval(async () => {
-      if (audioPlayer) {
-        const current = await audioPlayer.currentTime;
-        setPosition(current || 0);
-        
-        const total = await audioPlayer.duration;
-        if (total && total > 0) setDuration(total);
+      if (soundRef.current) {
+        const status = await soundRef.current.getStatusAsync();
+        if (status.isLoaded) {
+          setPosition(status.positionMillis / 1000);
+          setDuration(status.durationMillis ? status.durationMillis / 1000 : 0);
+        }
       }
     }, 500);
     
     return () => clearInterval(intervalId);
-  }, [audioPlayer]);
+  }, []);
+  
+  // Load and play new audio when URL changes
+  useEffect(() => {
+    const loadAndPlayAudio = async () => {
+      try {
+        if (!audioUrl) return;
+        
+        // Unload previous sound if exists
+        if (soundRef.current) {
+          await soundRef.current.unloadAsync();
+        }
+        
+        // Load new sound
+        const { sound } = await Audio.Sound.createAsync(
+          { uri: audioUrl },
+          { shouldPlay: true },
+          (status) => {
+            // This is our playback status update callback
+            if (status.isLoaded) {
+              setIsPlaying(status.isPlaying);
+              
+              // When playback finishes
+              if (status.didJustFinish) {
+                setIsPlaying(false);
+              }
+            }
+          }
+        );
+        
+        soundRef.current = sound;
+      } catch (error) {
+        console.error('Error loading audio:', error);
+      }
+    };
+    
+    loadAndPlayAudio();
+  }, [audioUrl]);
   
   const playSong = async (song: Song) => {
     if (currentSong?.id === song.id) {
       // Resume current song
-      await audioPlayer.play();
-      setIsPlaying(true);
+      if (soundRef.current) {
+        await soundRef.current.playAsync();
+        setIsPlaying(true);
+      }
     } else {
       // Play new song
       setCurrentSong(song);
@@ -61,24 +124,24 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   };
   
   const pauseSong = async () => {
-    await audioPlayer.pause();
-    setIsPlaying(false);
+    if (soundRef.current) {
+      await soundRef.current.pauseAsync();
+      setIsPlaying(false);
+    }
   };
   
   const resumeSong = async () => {
-    await audioPlayer.play();
-    setIsPlaying(true);
+    if (soundRef.current) {
+      await soundRef.current.playAsync();
+      setIsPlaying(true);
+    }
   };
   
   const seekTo = async (pos: number) => {
-    await audioPlayer.seekTo(pos);
-  };
-  
-  useEffect(() => {
-    if (audioUrl) {
-      audioPlayer.play();
+    if (soundRef.current) {
+      await soundRef.current.setPositionAsync(pos * 1000); // Convert to milliseconds
     }
-  }, [audioUrl]);
+  };
   
   return (
     <AudioContext.Provider

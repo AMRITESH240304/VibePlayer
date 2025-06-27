@@ -1,4 +1,5 @@
 import MiniPlayer from "@/components/MiniPlayer";
+import SoundWave from "@/components/SoundWave";
 import { useAudio } from "@/context/AudioContext";
 import { Song } from "@/types/index";
 import { Ionicons } from "@expo/vector-icons";
@@ -69,6 +70,8 @@ export default function Detail() {
         const secs = Math.floor(seconds % 60);
         return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
     };
+    
+    const isSongPlaying = isPlaying && currentSong?.id === songDetails?.id;
 
     return (
         <View className="flex-1 bg-darkBg">
@@ -80,7 +83,7 @@ export default function Detail() {
                     <Ionicons name="arrow-back" size={24} color="white" />
                 </TouchableOpacity>
                 <Text className="text-white text-lg font-bold ml-2">
-                    Song Details
+                    Now Playing
                 </Text>
             </View>
 
@@ -90,24 +93,36 @@ export default function Detail() {
                 </View>
             ) : (
                 <ScrollView className="px-4 pt-6">
-                    {/* Album Cover */}
+                    {/* Album Cover with Sound Wave */}
                     <View className="items-center mb-6">
-                        <Image
-                            source={{ 
-                                uri: songDetails.coverImage || 
-                                "https://images.rawpixel.com/image_png_social_square/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDI0LTAzL3Jhd3BpeGVsX29mZmljZV80N19hX2JsYWNrX3NpbGhvdWV0dGVfYV9tdXNpY19sb2dvX2ljb25fb25fYV93aF9kZThiOTE0MS00MjAyLTRlNTctOTdkYS0yZmQwYWMxZTdmYzIucG5n.png"
-                            }}
-                            className="w-64 h-64 rounded-lg"
-                            resizeMode="cover"
-                        />
+                        <View className="w-64 h-64 rounded-lg overflow-hidden bg-black/20 justify-center items-center">
+                            {/* Album art as background */}
+                            {songDetails.coverImage && (
+                                <Image
+                                    source={{ uri: songDetails.coverImage }}
+                                    className="absolute w-full h-full opacity-30"
+                                    resizeMode="cover"
+                                    blurRadius={3}
+                                />
+                            )}
+                            
+                            {/* Sound wave visualization */}
+                            <View className="w-full h-full justify-center items-center">
+                                <SoundWave 
+                                    isPlaying={isSongPlaying} 
+                                    color="#1db954"
+                                    barCount={40}
+                                />
+                            </View>
+                        </View>
                     </View>
 
                     {/* Song Info */}
                     <View className="mb-6">
-                        <Text className="text-white text-2xl font-bold">
+                        <Text className="text-white text-2xl font-bold text-center">
                             {songDetails.title}
                         </Text>
-                        <Text className="text-gray-400 text-lg">
+                        <Text className="text-gray-400 text-lg text-center">
                             {songDetails.artist}
                         </Text>
                     </View>
@@ -135,31 +150,31 @@ export default function Detail() {
                     </View>
 
                     {/* Play Controls */}
-                    <View className="flex-row justify-center space-x-8 mb-8">
+                    <View className="flex-row justify-center space-x-8 mb-8 mt-4">
                         <TouchableOpacity
                             className="p-3"
                             onPress={() => seekTo(0)}
                         >
                             <Ionicons
                                 name="play-skip-back"
-                                size={28}
+                                size={32}
                                 color="white"
                             />
                         </TouchableOpacity>
                         <TouchableOpacity
-                            className="bg-[#1db954] p-4 rounded-full"
+                            className="bg-[#1db954] p-5 rounded-full"
                             onPress={togglePlayback}
                         >
                             <Ionicons
-                                name={isPlaying && currentSong?.id === songDetails.id ? "pause" : "play"}
-                                size={28}
+                                name={isSongPlaying ? "pause" : "play"}
+                                size={32}
                                 color="white"
                             />
                         </TouchableOpacity>
                         <TouchableOpacity className="p-3">
                             <Ionicons
                                 name="play-skip-forward"
-                                size={28}
+                                size={32}
                                 color="white"
                             />
                         </TouchableOpacity>
