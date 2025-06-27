@@ -14,3 +14,10 @@ export type WebSocketMessage =
       type: "upload_status" | "training_status";
       message: number;
     };
+
+type Song = {
+  id: string;
+  title: string;
+  artist: string;
+  coverImage: string;
+};
