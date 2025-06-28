@@ -14,6 +14,10 @@ app.add_middleware(
 )
 
 app.include_router(router)
+@app.head("/")
+def head_root():
+    return None  # HEAD requests return no body
+
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the FastAPI application!"}
