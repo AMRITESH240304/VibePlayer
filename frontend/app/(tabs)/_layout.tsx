@@ -63,14 +63,6 @@ const TabsLayout = () => {
             tabBarIcon: () => <Text className="text-2xl">⚙️</Text>,
           }}
         />
-        <Tabs.Screen
-          name="playlist"
-          options={{
-            title: 'playlist',
-            headerShown: false,
-            tabBarIcon: ({ focused }) => <MaterialCommunityIcons name="playlist-music" size={40} color={focused ? "red" : "gray"} />,
-          }}
-        />
       </Tabs>
     </>
   );

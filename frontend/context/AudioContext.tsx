@@ -11,6 +11,12 @@ type AudioContextType = {
   pauseSong: () => void;
   resumeSong: () => void;
   seekTo: (position: number) => void;
+  playlist: Song[];
+  setPlaylist: (songs: Song[]) => void;
+  playNext: () => void;
+  playPrevious: () => void;
+  isShuffleOn: boolean;
+  toggleShuffle: () => void;
 };
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -21,6 +27,9 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [playlist, setPlaylist] = useState<Song[]>([]);
+  const [isShuffleOn, setIsShuffleOn] = useState(false);
+  const [playHistory, setPlayHistory] = useState<Song[]>([]);
   const soundRef = useRef<Audio.Sound | null>(null);
   
   // Configure audio mode for background playback
@@ -64,6 +73,11 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
         if (status.isLoaded) {
           setPosition(status.positionMillis / 1000);
           setDuration(status.durationMillis ? status.durationMillis / 1000 : 0);
+          
+          // Auto-play next song when current song ends
+          if (status.didJustFinish) {
+            playNext();
+          }
         }
       }
     }, 500);
@@ -90,11 +104,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
             // This is our playback status update callback
             if (status.isLoaded) {
               setIsPlaying(status.isPlaying);
-              
-              // When playback finishes
-              if (status.didJustFinish) {
-                setIsPlaying(false);
-              }
             }
           }
         );
@@ -116,6 +125,11 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
         setIsPlaying(true);
       }
     } else {
+      // Add current song to history if it exists
+      if (currentSong) {
+        setPlayHistory(prev => [...prev, currentSong]);
+      }
+      
       // Play new song
       setCurrentSong(song);
       setIsPlaying(true);
@@ -142,6 +156,88 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       await soundRef.current.setPositionAsync(pos * 1000); // Convert to milliseconds
     }
   };
+
+  const getRandomSong = (): Song | null => {
+    if (playlist.length === 0) return null;
+    
+    // Exclude current song from random selection
+    const availableSongs = playlist.filter(
+      song => !currentSong || song.id !== currentSong.id
+    );
+    
+    if (availableSongs.length === 0) return playlist[0];
+    
+    const randomIndex = Math.floor(Math.random() * availableSongs.length);
+    return availableSongs[randomIndex];
+  };
+  
+  const getNextSong = (): Song | null => {
+    if (playlist.length === 0) return null;
+    
+    if (isShuffleOn) {
+      return getRandomSong();
+    }
+    
+    // Find current song index
+    const currentIndex = currentSong 
+      ? playlist.findIndex(song => song.id === currentSong.id)
+      : -1;
+    
+    // If current song not in playlist or is last song, play first song
+    if (currentIndex === -1 || currentIndex === playlist.length - 1) {
+      return playlist[0];
+    }
+    
+    // Otherwise play next song
+    return playlist[currentIndex + 1];
+  };
+  
+  const getPreviousSong = (): Song | null => {
+    // If we have play history, use the most recent song
+    if (playHistory.length > 0) {
+      const previousSong = playHistory[playHistory.length - 1];
+      // Remove the song from history
+      setPlayHistory(prev => prev.slice(0, -1));
+      return previousSong;
+    }
+    
+    if (playlist.length === 0) return null;
+    
+    if (isShuffleOn) {
+      return getRandomSong();
+    }
+    
+    // Find current song index
+    const currentIndex = currentSong 
+      ? playlist.findIndex(song => song.id === currentSong.id)
+      : -1;
+    
+    // If current song not in playlist or is first song, play last song
+    if (currentIndex === -1 || currentIndex === 0) {
+      return playlist[playlist.length - 1];
+    }
+    
+    // Otherwise play previous song
+    return playlist[currentIndex - 1];
+  };
+  
+  const playNext = () => {
+    const nextSong = getNextSong();
+    if (nextSong) {
+      playSong(nextSong);
+    }
+  };
+  
+  const playPrevious = () => {
+    const prevSong = getPreviousSong();
+    if (prevSong) {
+      playSong(prevSong);
+    }
+  };
+  
+  const toggleShuffle = () => {
+    setIsShuffleOn(prev => !prev);
+  };
   
   return (
     <AudioContext.Provider
@@ -154,6 +250,12 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
         pauseSong,
         resumeSong,
         seekTo,
+        playlist,
+        setPlaylist,
+        playNext,
+        playPrevious,
+        isShuffleOn,
+        toggleShuffle
       }}
     >
       {children}
