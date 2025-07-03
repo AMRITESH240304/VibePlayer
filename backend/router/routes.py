@@ -58,7 +58,6 @@ def stream_audio(song_id: str, range: Optional[str] = Header(None)):
         return stream_service.stream_audio(file_key=file_key, range=range)
     except Exception as e:
         return Response(content=f"Error streaming audio: {str(e)}", status_code=500)
-    
 
 @router.post("/upload")
 async def upload_file(
