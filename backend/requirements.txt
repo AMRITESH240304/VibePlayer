@@ -7,3 +7,6 @@ dataplane==0.1.3
 pymongo
 certifi
 python-multipart
+openl3
+librosa
+soundfile
