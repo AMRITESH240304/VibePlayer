@@ -59,6 +59,33 @@ def stream_audio(song_id: str, range: Optional[str] = Header(None)):
     except Exception as e:
         return Response(content=f"Error streaming audio: {str(e)}", status_code=500)
 
+@router.get("/find_similar/{song_id}")
+def find_similar_songs(song_id: str, limit: int = 5):
+    try:
+        song = mongo_service.get_song_by_id(song_id)
+        return json.loads(json.dumps(song, default=str))
+    except Exception as e:
+        return Response(content=f"Error finding similar songs: {str(e)}", status_code=500)
+    
+@router.get("/stream/playlist/")
+def stream_playlist():
+    try:
+        playlist = mongo_service.get_all_playlists()
+        if not playlist:
+            return Response(content="No playlists found", status_code=404)
+        playlist_songs = []
+        for pl in playlist: 
+            song_ids = [song["song_id"] for song in pl.get("songs", [])]
+            songs = mongo_service.get_songs_by_ids(song_ids)
+            playlist_songs.append({
+                "playlist_id": str(pl["_id"]),
+                "name": pl.get("name"),
+                "songs": [json.loads(json.dumps(song, default=str)) for song in songs]
+            })
+        return {"message": playlist_songs}
+    except Exception as e:
+        return Response(content=f"Error streaming playlist: {str(e)}", status_code=500)
+
 @router.post("/upload")
 async def upload_file(
     file: UploadFile = File(...),
