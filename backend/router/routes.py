@@ -6,6 +6,7 @@ from services.mongoservice import MongoService
 from models.song_model import Song
 from models.playlist_model import Playlist
 import json
+from services.semantic_search import SemanticSearchService
 
 router = APIRouter()
 uploader = R2Uploader()
@@ -62,11 +63,12 @@ def stream_audio(song_id: str, range: Optional[str] = Header(None)):
 @router.get("/find_similar/{song_id}")
 def find_similar_songs(song_id: str, limit: int = 5):
     try:
-        song = mongo_service.get_song_by_id(song_id)
-        return json.loads(json.dumps(song, default=str))
+        search_service = SemanticSearchService()
+        similar = search_service.find_similar_songs(song_id, limit)
+        return json.loads(json.dumps(similar, default=str))
     except Exception as e:
         return Response(content=f"Error finding similar songs: {str(e)}", status_code=500)
-    
+
 @router.get("/stream/playlist/")
 def stream_playlist():
     try:
