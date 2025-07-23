@@ -6,7 +6,11 @@ class Settings(BaseSettings):
     S3_API_URL:str
     S3_BUCKET_NAME:str
     MONGO_URI:str
-    
+    REDIS_ENDPOINT:str
+    REDIS_PASSWORD:str
+    REDIS_HOST:str
+    REDIS_CLI:str
+
     class Config:
         env_file = ".env"
         

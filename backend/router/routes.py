@@ -7,11 +7,20 @@ from models.song_model import Song
 from models.playlist_model import Playlist
 import json
 from services.semantic_search import SemanticSearchService
+from config import settings
+from redis import Redis
 
 router = APIRouter()
 uploader = R2Uploader()
 stream_service = AudioStreamService(s3_client=uploader.s3_client, bucket=uploader.bucket)
 mongo_service = MongoService()
+redis_client = Redis(
+    host=settings.REDIS_HOST,
+    port=18811,
+    decode_responses=True,
+    username="default",
+    password=settings.REDIS_PASSWORD,
+)
 
 @router.get("/hello")
 def say_hello():
@@ -116,6 +125,8 @@ async def upload_file(
 
         if not result:
             return Response(content="Database insertion failed", status_code=500)
+        
+        redis_client.lpush("songs_queue", file.filename)
 
         return {"message": "File uploaded successfully", "response": result}
 
