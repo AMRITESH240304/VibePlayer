@@ -26,7 +26,7 @@ def process_task(task_data):
         embedding = embedding_downloader.get_embedding(file_path)
         print(f"[Worker] Embedding for {task_data['file_key']}: {embedding}")
         
-        small_embedding = embedding_downloader.get_small_embedding(file_path, duration=10.0)
+        # small_embedding = embedding_downloader.get_small_embedding(file_path)
 
         task_data = {
             "_id": task_data.get("id"),
@@ -36,16 +36,16 @@ def process_task(task_data):
             "artist": task_data.get("artist")
         }
         
-        task_data_small = {
-            "_id": task_data.get("id"),
-            "file_key": task_data.get("file_key"),
-            "embedding": small_embedding,
-            "title": task_data.get("title"),
-            "artist": task_data.get("artist")
-        }
+        # task_data_small = {
+        #     "_id": task_data.get("id"),
+        #     "file_key": task_data.get("file_key"),
+        #     "embedding": small_embedding,
+        #     "title": task_data.get("title"),
+        #     "artist": task_data.get("artist")
+        # }
 
         inserted_id = mongo_service.insert_data(task_data)
-        inserted_small_id = mongo_service.insert_small_data(task_data_small)
+        # inserted_small_id = mongo_service.insert_small_data(task_data_small)
         print(f"[Worker] Inserted data with ID: {inserted_id, inserted_small_id}")
     except Exception as e:
         print(f"[Worker] Error processing task {task_data['file_key']}: {e}")
