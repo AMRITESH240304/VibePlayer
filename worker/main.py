@@ -4,6 +4,10 @@ import time
 from db import Mongo
 from process import R2Downloader
 from config import settings
+import threading
+from flask import Flask
+
+app = Flask(__name__)
 
 embedding_downloader = R2Downloader()
 mongo_service = Mongo()
@@ -70,5 +74,11 @@ def main():
             print(f"[Worker] Error: {e}")
             time.sleep(1)  
 
+@app.route("/")
+def health_check():
+    return "Worker is running", 200
+
+
 if __name__ == "__main__":
-    main()
+    threading.Thread(target=main, daemon=True).start()
+    app.run(host="0.0.0.0", port=8080)
