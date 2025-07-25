@@ -1,13 +1,11 @@
-# FROM line stays the same
 FROM python:3.11.13-slim
 
 WORKDIR /app
 
-# COPY from relative path inside the build context
-COPY ./requirements.txt .
+COPY worker/requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY worker/ .
 
 CMD ["python", "main.py"]
