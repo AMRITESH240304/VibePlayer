@@ -1,23 +1,13 @@
-# Start with official Python 3.11.13 image
+# FROM line stays the same
 FROM python:3.11.13-slim
 
-# Set working directory
-WORKDIR /
+WORKDIR /app
 
-# Install system dependencies (optional: depending on your needs)
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+# COPY from relative path inside the build context
+COPY ./requirements.txt .
 
-# Install pip requirements
-COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy app source code
 COPY . .
 
-# Set environment variable (optional)
-ENV PYTHONUNBUFFERED=1
-
-# Start your worker
 CMD ["python", "main.py"]
