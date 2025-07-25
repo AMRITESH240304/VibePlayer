@@ -2,7 +2,7 @@
 FROM python:3.11.13-slim
 
 # Set working directory
-WORKDIR /app
+WORKDIR /
 
 # Install system dependencies (optional: depending on your needs)
 RUN apt-get update && apt-get install -y \
