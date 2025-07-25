@@ -122,13 +122,20 @@ async def upload_file(
             "file_key": file.filename,
             "release_year": release_year
         })
-
+        
         if not result:
             return Response(content="Database insertion failed", status_code=500)
         
-        redis_client.lpush("songs_queue", file.filename)
+        redis_push = {
+            "id": result,
+            "file_key": file.filename,
+            "title": title,
+            "artist": artist
+        }
 
-        return {"message": "File uploaded successfully", "response": result}
+        redis_client.lpush("songs_queue", json.dumps(redis_push))
+
+        return {"message": "File uploaded successfully", "response": redis_push}
 
     except Exception as e:
         print("Upload failed:", str(e))

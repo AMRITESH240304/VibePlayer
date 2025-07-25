@@ -13,7 +13,7 @@ class MongoService:
         
     def insert_song(self, song_data: Dict[str, Any]) -> str:
         result = self.songs.insert_one(song_data)
-        return str(result)
+        return str(result.inserted_id)
 
     def get_song_by_id(self, song_id: str) -> Optional[Dict[str, Any]]:
         return self.songs.find_one({"_id": ObjectId(song_id)})

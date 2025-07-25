@@ -1,0 +1,9 @@
+redis
+requests
+pydantic-settings
+certifi
+pymongo
+boto3
+openl3
+soundfile
+librosa
