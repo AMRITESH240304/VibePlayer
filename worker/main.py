@@ -46,7 +46,7 @@ def process_task(task_data):
 
         inserted_id = mongo_service.insert_data(task_data)
         # inserted_small_id = mongo_service.insert_small_data(task_data_small)
-        print(f"[Worker] Inserted data with ID: {inserted_id, inserted_small_id}")
+        print(f"[Worker] Inserted data with ID: {inserted_id}")
     except Exception as e:
         print(f"[Worker] Error processing task {task_data['file_key']}: {e}")
     finally:
