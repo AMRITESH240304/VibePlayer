@@ -10,6 +10,7 @@ import soundfile as sf
 from pymongo import MongoClient
 import certifi
 import librosa
+from typing import Optional
 
 class R2Downloader:
     def __init__(self):
@@ -41,7 +42,7 @@ class R2Downloader:
         embedding, _ = openl3.get_audio_embedding(audio, sr, content_type="music", embedding_size=512)
         return embedding.mean(axis=0).tolist()
 
-    def get_small_embedding(self, file_path: str, duration: float = 10.0):
+    def get_small_embedding(self, file_path: str, duration: Optional[float] = 10.0):
         audio, sr = sf.read(file_path)
         embedding, _ = openl3.get_audio_embedding(audio, sr, content_type="music", embedding_size=512, duration=duration)
         return embedding.mean(axis=0).tolist()
