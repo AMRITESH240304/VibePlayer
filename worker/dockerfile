@@ -5,7 +5,7 @@ WORKDIR /app
 COPY worker/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY worker/ .  # Copy the whole worker dir (code + .env + main.py, etc.)
+COPY worker/ .
 
 EXPOSE 8080
 
